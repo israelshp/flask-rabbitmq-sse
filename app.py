@@ -2,6 +2,7 @@ import time
 import uuid
 from queue import Queue
 from threading import Thread
+from typing import Generator
 
 from flask import Flask, Response, request
 
@@ -10,10 +11,10 @@ from logger import logger
 
 app = Flask(__name__)
 
-connections: dict[int, Queue] = {}
+connections: dict[uuid.UUID, Queue] = {}
 
 
-def stats():
+def stats() -> None:
     while True:
         count = len(connections)
         be_verb = "are" if count != 1 else "is"
@@ -22,14 +23,14 @@ def stats():
         time.sleep(30)
 
 
-def consume():
+def consume() -> None:
     consumer = Consumer()
     for event, content in consumer.subscribe():
         for q in connections.values():
             q.put((event, content))
 
 
-def event_stream(user_id):
+def event_stream(user_id: uuid.UUID) -> Generator[str, None]:
     q = Queue()
     connections[user_id] = q
     try:
@@ -43,7 +44,7 @@ def event_stream(user_id):
 
 
 @app.route("/events")
-def events():
+def events() -> Response:
     user_id = uuid.uuid4()
     logger.info(
         f"new subscription: {user_id} ({request.remote_addr}, {request.user_agent})"
