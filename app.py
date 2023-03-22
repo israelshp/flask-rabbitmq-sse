@@ -6,11 +6,11 @@ from typing import Generator
 
 from flask import Flask, Response, request, render_template
 
-from consumer import Consumer
+from messagebroker import MessageBroker
 from logger import logger
 
 app = Flask(__name__)
-
+broker = MessageBroker()
 connections: dict[uuid.UUID, Queue] = {}
 
 
@@ -24,8 +24,7 @@ def stats() -> None:
 
 
 def consume() -> None:
-    consumer = Consumer()
-    for eid, event, content in consumer.subscribe():
+    for eid, event, content in broker.subscribe():
         for q in connections.values():
             q.put((eid, event, content))
 
@@ -55,6 +54,15 @@ def events() -> Response:
 @app.route("/")
 def viewer() -> str:
     return render_template("viewer.html")
+
+
+@app.route("/publish", methods=["POST"])
+def publish() -> Response:
+    data = request.json
+    event = data.get("event", "message")
+    content = data.get("content")
+    broker.publish(content, event)
+    return Response("ok", 200)
 
 
 if __name__ == "__main__":

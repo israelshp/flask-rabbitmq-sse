@@ -7,7 +7,7 @@ import pika
 from logger import logger
 
 
-class Consumer:
+class MessageBroker:
     EXCHANGE_NAME = "sse"
 
     def __init__(self):
@@ -15,7 +15,7 @@ class Consumer:
         self.conn_params = pika.ConnectionParameters(
             "localhost",
             credentials=credentials,
-            client_properties={"connection_name": "SSE Test Consumer"},
+            client_properties={"connection_name": "SSE Test"},
         )
         self.channel = pika.BlockingConnection(self.conn_params).channel()
         self.channel.exchange_declare(self.EXCHANGE_NAME, "fanout")
@@ -37,3 +37,8 @@ class Consumer:
                 yield id, event, content
             except (KeyError, JSONDecodeError) as e:
                 yield id, "message", body
+
+    def publish(self, content: str, event: str):
+        data = {"event": event, "content": content}
+        data_bytes = str.encode(json.dumps(data))
+        self.channel.basic_publish(self.EXCHANGE_NAME, "", data_bytes)
