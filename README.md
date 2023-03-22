@@ -14,10 +14,14 @@ $ python app.py
 $ curl -s -N --http2 -H "Accept:text/event-stream" http://localhost:5000/events
 ```
 
-3. Publish messages to an exchange named `sse` (e.g. via RabbitMQ management GUI) and they will be displayed in the client. The messages structure is:
+3. Publish messages to an exchange named `sse` and they will be displayed in the client. The messages structure is:
 ```json
 {
   "event": "information",
   "content": "foo"
 }
+```
+Messages can be published via RabbitMQ management GUI or:
+```shell
+$ curl -X POST -d '{"event": "message", "content": "some content"}' -H "Content-Type:application/json"  http://localhost:5000/publish
 ```
