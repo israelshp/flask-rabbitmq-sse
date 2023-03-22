@@ -10,6 +10,7 @@ function addMessage(type, content) {
     typeElement.classList.add(type);
     clone.querySelector(".content").innerText = content;
     messagesDiv.appendChild(clone);
+    window.scrollTo(0, document.body.scrollHeight);
 }
 
 const messagesDiv = document.querySelector("div#messages");
