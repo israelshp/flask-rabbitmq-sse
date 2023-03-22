@@ -1,0 +1,42 @@
+body {
+    font-family: "Rubik";
+    background-color: #000;
+    border-radius: 15px;
+}
+
+#container {
+    background-color: #1b202b;
+    padding: 25px;
+    min-width: 50vw;
+    max-width: 70vw;
+    margin: 0 auto;
+}
+
+
+.message-container {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.type {
+    color: gray;
+    font-style: italic;
+    /* padding-right: 25px; */
+    min-width: 100px;
+}
+
+.content {
+    color: white;
+}
+
+.message, .info {
+    color: lightgreen;
+}
+
+.warning {
+    color: yellow;
+}
+
+.error {
+    color: red;
+}
