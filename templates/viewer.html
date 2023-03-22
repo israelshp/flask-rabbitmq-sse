@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SSE Viewer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+    <template id="message-template">
+        <div class="message-container">
+            <div class="type">Event Type</div>
+            <div class="content">Message</div>
+        </div>
+    </template>
+    <div id="container">
+        <div id="messages"></div>
+
+    </div>
+    <script src=" {{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

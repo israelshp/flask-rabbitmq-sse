@@ -4,13 +4,13 @@ from queue import Queue
 from threading import Thread
 from typing import Generator
 
-from flask import Flask, Response, request
+from flask import Flask, Response, request, render_template
 
-from consumer import Consumer
+from messagebroker import MessageBroker
 from logger import logger
 
 app = Flask(__name__)
-
+broker = MessageBroker()
 connections: dict[uuid.UUID, Queue] = {}
 
 
@@ -24,20 +24,19 @@ def stats() -> None:
 
 
 def consume() -> None:
-    consumer = Consumer()
-    for event, content in consumer.subscribe():
+    for eid, event, content in broker.subscribe():
         for q in connections.values():
-            q.put((event, content))
+            q.put((eid, event, content))
 
 
-def event_stream(user_id: uuid.UUID) -> Generator[str, None]:
+def event_stream(user_id: uuid.UUID) -> Generator[str, None, None]:
     q = Queue()
     connections[user_id] = q
     try:
         while True:
-            event, content = q.get()
+            eid, event, content = q.get()
             logger.info(f">>> notifying {user_id}")
-            yield f"event:{event}\ndata: {content}\n\n"
+            yield f"id:{eid}\nevent:{event}\ndata: {content}\n\n"
     finally:
         logger.info(f"{user_id} has disconnected")
         connections.pop(user_id)
@@ -50,6 +49,20 @@ def events() -> Response:
         f"new subscription: {user_id} ({request.remote_addr}, {request.user_agent})"
     )
     return Response(event_stream(user_id), mimetype="text/event-stream")
+
+
+@app.route("/")
+def viewer() -> str:
+    return render_template("viewer.html")
+
+
+@app.route("/publish", methods=["POST"])
+def publish() -> Response:
+    data = request.json
+    event = data.get("event", "message")
+    content = data.get("content")
+    broker.publish(content, event)
+    return Response("ok", 200)
 
 
 if __name__ == "__main__":
